@@ -1,21 +1,14 @@
-from pydantic import BaseModel, field_validator
-from sqlalchemy import INTEGER, String, Index
+from sqlalchemy import Index, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.db.database import Base
 
-class Categories(BaseModel):
+
+class Categories(Base):
     __tablename__ = "categories"
 
-    id: Mapped[int] = mapped_column(INTEGER, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String)
     slug: Mapped[str] = mapped_column(String)
 
     __table_args__ = Index("name_slug_index", "name", "slug")
-
-    @field_validator("name", "slug")
-    @classmethod
-    def check_name(cls, value):
-        if value.isalnum():
-            raise ValueError("Only string is allowed")
-
-        return value.lower()
