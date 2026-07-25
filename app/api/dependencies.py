@@ -3,13 +3,15 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose.exceptions import JWTError
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exception import CredentialException
+from app.core.exception import UnauthorizedException
 from app.core.security import decode_access_token
 from app.db.database import SessionLocal
+from app.models.users import Users
 
-oauth2_schema = OAuth2PasswordBearer(tokenUrl="/api/admin/login")
+oauth2_schema = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 async def get_db():
@@ -24,10 +26,22 @@ async def get_current_user(db: db_Session, token: str = Depends(oauth2_schema)):
     try:
         payload: dict = decode_access_token(token=token)
 
-        user_id: str | None = payload.get("sub")
+        user_id_str = payload.get("sub")
+        if not user_id_str:
+            raise UnauthorizedException()
 
-        if not user_id:
-            return CredentialException
+        user_id = int(user_id_str)
 
-    except JWTError:
-        return CredentialException
+    except (JWTError, ValueError):
+        raise UnauthorizedException()
+
+    stmt = select(Users).where(Users.id == user_id)
+    user_data = (await db.execute(stmt)).scalar_one_or_none()
+
+    if not user_data:
+        raise UnauthorizedException()
+
+    return {"email": user_data.email, "role": user_data.role}
+
+
+get_current_user_data = Annotated[dict, Depends(get_current_user)]

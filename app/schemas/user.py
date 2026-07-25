@@ -19,7 +19,7 @@ class UserRegisterRequest(BaseModel):
         return value
     
 
-class UserRegisterResponse(BaseModel):
+class UserResponse(BaseModel):
     id: int
     email: EmailStr
     role: str

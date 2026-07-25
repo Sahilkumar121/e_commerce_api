@@ -7,11 +7,14 @@ from app.core.config import setting
 
 password_hash = PasswordHash.recommended()
 
+
 def get_hashed_password(plain_password: str):
     return password_hash.hash(plain_password)
 
+
 def verify_hashed_password(plain_password: str, hashed_password) -> bool:
     return password_hash.verify(plain_password, hashed_password)
+
 
 def create_access_token(data: dict):
 
@@ -21,6 +24,7 @@ def create_access_token(data: dict):
     to_encode.update({"exp": expire})
 
     return jwt.encode(to_encode, setting.SECRETE_KEY, algorithm=setting.ALGORITHM)
+
 
 def decode_access_token(token: str):
     return jwt.decode(token, setting.SECRETE_KEY, algorithms=setting.ALGORITHM)

@@ -5,15 +5,11 @@ class AppException(Exception):
 
 
 class EmailAlreadyExistsException(AppException):
-
     def __init__(self, email: str) -> None:
         self.email = email
         super().__init__(f"Email {email} already exists")
 
+
 class UnauthorizedException(AppException):
     def __init__(self) -> None:
-        super().__init__("Invalid email and Password")
-
-class CredentialException(AppException):
-    def __init__(self, user_id: str) -> None:
-        super().__init__(f"No User with {user_id} found !")
+        super().__init__("Failed To Authorized")
