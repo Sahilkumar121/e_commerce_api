@@ -8,7 +8,8 @@ from app.db.database import engine, Base
 
 from app.core.exception import (
     EmailAlreadyExistsException,
-    UnauthorizedException
+    UnauthorizedException,
+    CredentialException
 )
 
 
@@ -30,6 +31,14 @@ async def email_exists_handler(_request: Request, _exc: EmailAlreadyExistsExcept
 @app.exception_handler(UnauthorizedException)
 async def unauthorized_exception(_request: Request, _exc: UnauthorizedException):
     return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content=_exc.message)
+
+
+@app.exception_handler(CredentialException)
+async def credential_handler(_req: Request, _exc: CredentialException):
+    return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={
+        "message": _exc.message,
+        "headers": {"WWW-Authenticate": "Bearer"}
+    })
 
 app.include_router(api.route)
 
