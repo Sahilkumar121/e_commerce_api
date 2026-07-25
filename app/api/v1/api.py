@@ -1,4 +1,7 @@
 from fastapi import APIRouter
 
-route = APIRouter(prefix="/api", tags=["API"])
+from app.api.v1.endpoints import admin
 
+route = APIRouter(prefix="/api")
+
+route.include_router(admin.route)

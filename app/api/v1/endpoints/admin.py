@@ -1,11 +1,11 @@
-from app.core.exception import EmailAlreadyExistsException
+from app.core.exception import EmailAlreadyExistsException, UnauthorizedException
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_db
-from app.core.security import get_hashed_password, verify_hashed_password
+from app.core.security import get_hashed_password, verify_hashed_password, create_access_token
 from app.models.users import Users
 from app.schemas.user import UserRegisterRequest, UserRegisterResponse
 
@@ -51,6 +51,16 @@ async def login_access_token(form_data: OAuth2PasswordRequestForm = Depends(), d
     user_exist = user_result.scalars().first()
 
     if not user_exist or not verify_hashed_password(form_data.password, user_exist.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Authorization Failed"
-        )
+        raise UnauthorizedException()
+
+
+    token = create_access_token(data={
+        "sub": user_exist.id,
+        "email": user_exist.email,
+        "role": user_exist.role
+    })
+
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }

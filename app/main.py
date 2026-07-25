@@ -21,7 +21,7 @@ async def lifespan(__app: FastAPI):
 
     await engine.dispose()
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 @app.exception_handler(EmailAlreadyExistsException)
 async def email_exists_handler(_request: Request, _exc: EmailAlreadyExistsException):
@@ -32,3 +32,8 @@ async def unauthorized_exception(_request: Request, _exc: UnauthorizedException)
     return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content=_exc.message)
 
 app.include_router(api.route)
+
+
+@app.get("/")
+async def home_page():
+    return {"message": "E-Commerce API"}

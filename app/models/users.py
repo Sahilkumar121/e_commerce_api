@@ -13,4 +13,4 @@ class Users(Base):
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     role: Mapped[str] = mapped_column(String, nullable=False)
-    created_at: Mapped[Date] = mapped_column(default=date.today)
+    created_at: Mapped[date] = mapped_column(default=date.today)
