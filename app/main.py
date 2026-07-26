@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from app.api.v1 import api
 from app.core.exception import (
     EmailAlreadyExistsException,
+    ForbiddenException,
     UnauthorizedException,
 )
 from app.db.database import Base, engine
@@ -30,8 +31,13 @@ async def email_exists_handler(_request: Request, /, _exc: EmailAlreadyExistsExc
 
 
 @app.exception_handler(UnauthorizedException)
-async def unauthorized_exception(_request: Request, _exc: UnauthorizedException):
+async def unauthorized_exception(_request: Request, /, _exc: UnauthorizedException):
     return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content=_exc.message)
+
+
+@app.exception_handler(ForbiddenException)
+async def forbidden_handler(_request: Request, /, _exc: ForbiddenException):
+    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content=_exc.message)
 
 
 app.include_router(api.route)
