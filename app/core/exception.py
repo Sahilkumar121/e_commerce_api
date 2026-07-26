@@ -13,3 +13,8 @@ class EmailAlreadyExistsException(AppException):
 class UnauthorizedException(AppException):
     def __init__(self) -> None:
         super().__init__("Failed To Authorized")
+
+
+class ForbiddenException(AppException):
+    def __init__(self):
+        super().__init__("You Don't Have Permission To Perform This Task")
