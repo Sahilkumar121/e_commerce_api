@@ -5,8 +5,10 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.dependencies import db_Session, get_current_user_data
-from app.core.exception import ForbiddenException
+from app.core.exception import ForbiddenException, UnauthorizedException
+from app.models.categories import Categories
 from app.models.users import Users
+from app.schemas.category import CategoryResponse, CreateCategory
 from app.schemas.user import UserResponse
 
 route = APIRouter(prefix="/admin", tags=["Admin"])
@@ -63,3 +65,30 @@ async def get_user_by_id(
         )
 
     return user_data
+
+
+@route.post(
+    "/categories", status_code=status.HTTP_201_CREATED, response_model=CategoryResponse
+)
+async def create_categories(
+    payload: CreateCategory, db: db_Session, current_user: get_current_user_data
+):
+
+    if current_user["role"] != "admin":
+        raise UnauthorizedException()
+
+    new_category = Categories(name=payload.name, slug=payload.slug)
+
+    try:
+        db.add(new_category)
+        await db.commit()
+        await db.refresh(new_category)
+    except SQLAlchemyError as e:
+        await db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"There is some error {e}",
+        )
+
+    return new_category
