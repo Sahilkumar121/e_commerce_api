@@ -7,8 +7,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.api.dependencies import db_Session, get_current_user_data
 from app.core.exception import ForbiddenException, UnauthorizedException
 from app.models.categories import Categories
+from app.models.products import Products
 from app.models.users import Users
 from app.schemas.category import CategoryResponse, CreateCategory
+from app.schemas.product import CreateProducts, ProductResponse
 from app.schemas.user import UserResponse
 
 route = APIRouter(prefix="/admin", tags=["Admin"])
@@ -92,3 +94,31 @@ async def create_categories(
         )
 
     return new_category
+
+
+@route.post(
+    "/products", status_code=status.HTTP_201_CREATED, response_model=ProductResponse
+)
+async def post_products(
+    payload: CreateProducts, db: db_Session, curent_user: get_current_user_data
+):
+    if curent_user["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to perform this action",
+        )
+
+    new_product = Products(**payload.model_dump())
+
+    try:
+        db.add(new_product)
+        await db.commit()
+        await db.refresh(new_product)
+    except SQLAlchemyError as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"There is some error {e}",
+        )
+
+    return new_product

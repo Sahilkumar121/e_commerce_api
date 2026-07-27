@@ -1,6 +1,44 @@
+from datetime import date
 from typing import Annotated
 
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field, field_validator
+
+
+class CreateProducts(BaseModel):
+    categories_id: Annotated[int, Field(default=..., gt=0)]
+    name: Annotated[
+        str, Field(default=..., min_length=1, description="Name of product")
+    ]
+    description: Annotated[
+        str,
+        Field(
+            default=...,
+            min_length=1,
+            max_length=20,
+            description="Detail about the product",
+        ),
+    ]
+    price: Annotated[float, Field(default=..., gt=0)]
+    stock_quantity: Annotated[int, Field(default=..., gt=0)]
+    image_url: Annotated[str, Field(default=..., min_length=1)]
+    is_active: Annotated[bool, Field(default=True)]
+    created_at: Annotated[date, Field(default=date.today)]
+
+    @field_validator("name")
+    @classmethod
+    def check_name(cls, value) -> str:
+        if value.isalnum():
+            raise ValueError("Invalid name")
+
+        return value
+
+    @field_validator("is_active")
+    @classmethod
+    def check_active_status(cls, value) -> bool:
+        if value not in [True, False]:
+            raise ValueError("Invalid active status")
+
+        return value
 
 
 class ProductFieldQuery(BaseModel):
@@ -24,3 +62,15 @@ class ProductFieldQuery(BaseModel):
         end = self.cal_start + self.limit
 
         return end
+
+
+class ProductResponse(BaseModel):
+    id: int
+    categories_id: int
+    name: str
+    description: str
+    price: float
+    stock_quantity: int
+    image_url: str
+    is_active: bool
+    created_at: date
