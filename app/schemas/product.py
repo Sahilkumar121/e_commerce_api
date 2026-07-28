@@ -46,6 +46,7 @@ class ProductFieldQuery(BaseModel):
     limit: Annotated[int, Field(default=10, gt=0)]
     name: Annotated[str | None, Field(default=None, min_length=1)]
     price: Annotated[int | None, Field(default=None, gt=0)]
+    rating: Annotated[float | None, Field(default=None, ge=0, le=5)]
     stock_quantity: Annotated[int | None, Field(default=None, ge=0)]
     is_active: Annotated[bool | None, Field(default=None)]
 
