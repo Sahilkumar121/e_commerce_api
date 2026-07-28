@@ -68,7 +68,7 @@ async def get_user_by_id(
 
     return user_data
 
-
+# Create New Categories
 @route.post(
     "/categories", status_code=status.HTTP_201_CREATED, response_model=CategoryResponse
 )
@@ -95,7 +95,7 @@ async def create_categories(
 
     return new_category
 
-
+# Create new Products
 @route.post(
     "/products", status_code=status.HTTP_201_CREATED, response_model=ProductResponse
 )
