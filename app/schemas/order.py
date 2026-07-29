@@ -1,13 +1,32 @@
-from datetime import date
-from typing import Annotated
+from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
-class CreateOrder(BaseModel):
-    user_id: Annotated[int, Field(default=..., gt=0)]
-    status: Annotated[bool, Field(default=True)]
-    total_amount: Annotated[float, Field(default=...)]
-    discount_code: Annotated[str | None, Field(default=None)]
-    created_at: Annotated[date, Field(default=date.today)]
-    updated_at: Annotated[date, Field(default=date.today)]
+class OrderStatus(str, Enum):
+    CREATED = "Created"
+    PICKED = "Picked"
+    SHIPPED = "Shipped"
+    DELIVERED = "Delivered"
+
+
+class CreateOrderItem(BaseModel):
+    product_id: int = Field(gt=0)
+    quantity: int = Field(gt=0, description="Cannnot order 0 or negative order")
+
+
+class CreateOrderRequest(BaseModel):
+    status: OrderStatus = Field(default=OrderStatus.CREATED)
+    discount_code: str | None = Field(default=None)
+
+    item: list[CreateOrderItem] = Field(
+        min_length=1, description="Order must have atleast one item"
+    )
+
+    @field_validator("discount_code")
+    @classmethod
+    def check_status(cls, value):
+        if value:
+            return value.upper()
+
+        return value

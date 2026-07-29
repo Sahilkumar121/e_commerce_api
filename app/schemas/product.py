@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field, computed_field, field_validator
 
 
 class CreateProducts(BaseModel):
-    categories_id: Annotated[int, Field(default=..., gt=0)]
     name: Annotated[
         str, Field(default=..., min_length=1, description="Name of product")
     ]
@@ -22,7 +21,6 @@ class CreateProducts(BaseModel):
     stock_quantity: Annotated[int, Field(default=..., gt=0)]
     image_url: Annotated[str, Field(default=..., min_length=1)]
     is_active: Annotated[bool, Field(default=True)]
-    created_at: Annotated[date, Field(default=date.today)]
 
     @field_validator("name")
     @classmethod
