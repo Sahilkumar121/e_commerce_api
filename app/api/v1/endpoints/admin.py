@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Path, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.dependencies import db_Session, get_current_user_data
@@ -68,6 +68,7 @@ async def get_user_by_id(
 
     return user_data
 
+
 # Create New Categories
 @route.post(
     "/categories", status_code=status.HTTP_201_CREATED, response_model=CategoryResponse
@@ -85,6 +86,16 @@ async def create_categories(
         db.add(new_category)
         await db.commit()
         await db.refresh(new_category)
+
+        stmt = (
+            update(Products)
+            .where(Products.categories_id.is_(None))
+            .values(categories_id=new_category.id)
+        )
+
+        await db.execute(stmt)
+        await db.commit()
+
     except SQLAlchemyError as e:
         await db.rollback()
 
@@ -94,6 +105,7 @@ async def create_categories(
         )
 
     return new_category
+
 
 # Create new Products
 @route.post(
@@ -108,8 +120,25 @@ async def post_products(
             detail="You don't have permission to perform this action",
         )
 
-    new_product = Products(**payload.model_dump())
+    stmt = select(Categories).where(Categories.name.ilike(f"%{payload.name}%"))
+    category_data = (await db.execute(stmt)).scalar_one_or_none()
 
+    if not category_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No database found"
+        )
+
+    payload_product = Products(**payload.model_dump())
+
+    new_product = Products(
+        categories_id=category_data.id,
+        name=payload_product.name,
+        description=payload_product.description,
+        price=payload_product.price,
+        stock_quantity=payload_product.stock_quantity,
+        image_url=payload_product.image_url,
+        is_active=payload.is_active,
+    )
     try:
         db.add(new_product)
         await db.commit()
