@@ -1,7 +1,8 @@
 from sqlalchemy import Index, Integer, String, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
+from app.models.products import Products
 
 
 class Categories(Base):
@@ -15,3 +16,5 @@ class Categories(Base):
         UniqueConstraint("name", "slug", name="uq_name_slug"),
         Index("name_slug_index", "name", "slug"),
     )
+
+    products: Mapped[list[Products]] = relationship(back_populates="category")
