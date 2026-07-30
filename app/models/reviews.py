@@ -21,4 +21,4 @@ class Review(Base):
     comment: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[Date] = mapped_column(Date, default=date.today)
 
-    user: Mapped[Users] = relationship(back_populates="user")
+    user: Mapped[Users] = relationship(back_populates="reviews")

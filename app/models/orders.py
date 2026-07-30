@@ -1,10 +1,14 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.db.database import Base
+
+if TYPE_CHECKING:
+    from app.models.order_items import OrderItem
 
 
 class Orders(Base):
@@ -25,28 +29,3 @@ class Orders(Base):
     items: Mapped[list[OrderItem]] = relationship(
         back_populates="order", cascade="all, delete-orphan"
     )
-
-
-class OrderItem(Base):
-    __tablename__ = "order_items"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-
-    # Foreign Key linking back to the order
-    order_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("orders.id"), nullable=False
-    )
-
-    # Foreign Key linking to your products table
-    product_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("products.id"), nullable=False
-    )
-
-    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
-
-    # Always store the price at the time of purchase!
-    # If the product price goes up next year, this order's history stays accurate.
-    unit_price: Mapped[float] = mapped_column(nullable=False)
-
-    # Relationship linking back to the Order
-    order: Mapped[Orders] = relationship(back_populates="items")

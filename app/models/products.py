@@ -5,8 +5,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.db.database import Base
-from app.models.categories import Categories
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from app.models.categories import Categories
 
 class Products(Base):
     __tablename__ = "products"
@@ -23,4 +25,4 @@ class Products(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
-    category: Mapped[Categories] = relationship(back_populates="products")
+    category: Mapped["Categories"] = relationship(back_populates="products")

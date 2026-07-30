@@ -1,10 +1,13 @@
 from datetime import date
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
-from app.models.reviews import Review
+
+if TYPE_CHECKING:
+    from app.models.reviews import Review
 
 
 class Users(Base):
