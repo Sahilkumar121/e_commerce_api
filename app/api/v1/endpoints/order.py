@@ -1,14 +1,14 @@
-from sqlalchemy.exc import SQLAlchemyError
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.dependencies import db_Session, get_current_user_data
+from app.models.order_items import OrderItem
 from app.models.orders import Orders
 from app.models.products import Products
 from app.schemas.order import CreateOrderRequest
-from app.models.order_items import OrderItem
 
-route = APIRouter(prefix="/order", tags=["Orders", "Order_item"])
+route = APIRouter(prefix="/order", tags=["Orders"])
 
 
 @route.post("/")
@@ -39,18 +39,16 @@ async def crete_order(
             total_amount *= 0.2
 
         new_order_item = OrderItem(
-            product_id = product.id,
-            quantity = item_data.quantity,
-            unit_price = product.price
+            product_id=product.id, quantity=item_data.quantity, unit_price=product.price
         )
         order_items_list.append(new_order_item)
 
     new_order = Orders(
-        user_id = current_user_id,
-        total_amount = total_amount,
-        status = payload.status,
-        discount_code = payload.discount_code,
-        items = order_items_list
+        user_id=current_user_id,
+        total_amount=total_amount,
+        status=payload.status,
+        discount_code=payload.discount_code,
+        items=order_items_list,
     )
 
     try:
@@ -61,6 +59,9 @@ async def crete_order(
     except SQLAlchemyError as e:
         await db.rollback()
 
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error creating order: {e} ")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating order: {e} ",
+        )
 
     return new_order
