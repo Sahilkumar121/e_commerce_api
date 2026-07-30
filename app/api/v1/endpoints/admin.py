@@ -87,15 +87,6 @@ async def create_categories(
         await db.commit()
         await db.refresh(new_category)
 
-        stmt = (
-            update(Products)
-            .where(Products.categories_id.is_(None))
-            .values(categories_id=new_category.id)
-        )
-
-        await db.execute(stmt)
-        await db.commit()
-
     except SQLAlchemyError as e:
         await db.rollback()
 
@@ -120,7 +111,7 @@ async def post_products(
             detail="You don't have permission to perform this action",
         )
 
-    stmt = select(Categories).where(Categories.name.ilike(f"%{payload.name}%"))
+    stmt = select(Categories).where(Categories.id == payload.category_id)
     category_data = (await db.execute(stmt)).scalar_one_or_none()
 
     if not category_data:
