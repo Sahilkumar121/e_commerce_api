@@ -8,6 +8,7 @@ class CreateProducts(BaseModel):
     name: Annotated[
         str, Field(default=..., min_length=1, description="Name of product")
     ]
+    category_id: int = Field(default=..., gt=0)
     description: Annotated[
         str,
         Field(
