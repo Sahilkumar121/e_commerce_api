@@ -24,3 +24,9 @@ class UserResponse(BaseModel):
     email: EmailStr
     role: str
     created_at: date
+
+
+class CurrentUserResponse(BaseModel):
+    id: int
+    email: str
+    role: str
