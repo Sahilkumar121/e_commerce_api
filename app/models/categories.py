@@ -1,8 +1,9 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import Index, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.products import Products
@@ -20,4 +21,4 @@ class Categories(Base):
         Index("name_slug_index", "name", "slug"),
     )
 
-    products: Mapped[list["Products"]] = relationship(back_populates="category")
+    products: Mapped[list[Products]] = relationship(back_populates="category")
