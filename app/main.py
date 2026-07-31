@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
 
 from app.api.v1 import api
 from app.core.exception import (
@@ -9,6 +10,7 @@ from app.core.exception import (
     ForbiddenException,
     UnauthorizedException,
 )
+from app.core.rate_limiting import limiter
 from app.db.database import Base, engine
 
 
@@ -23,6 +25,16 @@ async def lifespan(__app: FastAPI, /):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.state.limiter = limiter
+
+
+@app.exception_handler(RateLimitExceeded)
+def rate_handle(_request: Request, /, _exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content={"detail": "Too many requests"},
+    )
 
 
 @app.exception_handler(EmailAlreadyExistsException)
