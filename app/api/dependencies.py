@@ -10,6 +10,7 @@ from app.core.exception import UnauthorizedException
 from app.core.security import decode_access_token
 from app.db.database import SessionLocal
 from app.models.users import Users
+from app.schemas.user import CurrentUserResponse
 
 oauth2_schema = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
@@ -32,7 +33,7 @@ async def get_current_user(db: db_Session, token: str = Depends(oauth2_schema)):
 
         user_id = int(user_id_str)
 
-    except (JWTError, ValueError):
+    except JWTError, ValueError:
         raise UnauthorizedException()
 
     stmt = select(Users).where(Users.id == user_id)
@@ -41,7 +42,10 @@ async def get_current_user(db: db_Session, token: str = Depends(oauth2_schema)):
     if not user_data:
         raise UnauthorizedException()
 
-    return {"email": user_data.email, "role": user_data.role}
+    current_user = CurrentUserResponse(
+        id=user_data.id, email=user_data.email, role=user_data.role
+    )
+    return current_user
 
 
-get_current_user_data = Annotated[dict, Depends(get_current_user)]
+get_current_user_data = Annotated[CurrentUserResponse, Depends(get_current_user)]
