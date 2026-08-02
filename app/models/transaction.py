@@ -20,7 +20,7 @@ class TransactionItems(Base):
     __tablename__ = "transactionItems"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    transaction_id: Mapped[int] = mapped_column(Integer, ForeignKey("transactions.is"))
+    transaction_id: Mapped[int] = mapped_column(Integer, ForeignKey("transactions.id"))
     product_id: Mapped[int] = mapped_column(Integer, ForeignKey("products.id"))
     quantity: Mapped[int] = mapped_column(Integer)
 
