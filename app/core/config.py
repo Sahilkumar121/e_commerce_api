@@ -1,4 +1,4 @@
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -7,6 +7,8 @@ class Setting(BaseSettings):
     SECRETE_KEY: str = Field(default=...)
     ACCESS_TOKEN_TIME_EXPIRE: int = Field(default=...)
     ALGORITHM: str = Field(default=...)
+    MAIL_USERNAME: str = Field(default=...)
+    MAIL_PASSWORD: SecretStr = Field(default=...)
 
     model_config = SettingsConfigDict(env_file=".env")
 
