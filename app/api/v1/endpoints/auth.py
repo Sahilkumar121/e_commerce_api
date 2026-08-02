@@ -14,6 +14,7 @@ from app.core.security import (
 )
 from app.models.users import Users
 from app.schemas.user import UserRegisterRequest, UserResponse
+from app.services.email_service import send_welcome_email
 
 route = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -23,25 +24,29 @@ async def register_user(db: db_Session, user_request: UserRegisterRequest):
     email = user_request.email
 
     stmt = select(Users).where(Users.email == email)
-    email_result = await db.execute(stmt)
-    email_exist = email_result.scalar_one_or_none()
+    email_exist = (await db.execute(stmt)).scalar_one_or_none()
 
     if email_exist:
-        raise EmailAlreadyExistsException(user_request.email)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=EmailAlreadyExistsException(user_request.email),
+        )
 
-    user_data = user_request.model_dump()
-
-    hashed_password = get_hashed_password(user_data["password"])
-
-    del user_data["password"]
-    user_data["hashed_password"] = hashed_password
-    user_register = Users(**user_data)
+    user_register = Users(
+        email=user_request.email,
+        hashed_password=get_hashed_password(user_request.password),
+        role=user_request.role,
+        username=user_request.username,
+        fullname=user_request.generate_full_name,
+    )
 
     try:
         db.add(user_register)
         await db.commit()
         await db.refresh(user_register)
 
+        await send_welcome_email(user_register.email, user_name=user_register.username)
+        
     except SQLAlchemyError as e:
         await db.rollback()
 
