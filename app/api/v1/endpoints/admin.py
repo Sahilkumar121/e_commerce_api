@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Path, status
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.dependencies import db_Session, get_current_user_data
@@ -20,7 +20,7 @@ route = APIRouter(prefix="/admin", tags=["Admin"])
 @route.get("/users", status_code=status.HTTP_200_OK, response_model=list[UserResponse])
 async def get_all_user(db: db_Session, current_user: get_current_user_data):
 
-    if current_user["role"] != "admin":
+    if current_user.role != "admin":
         raise ForbiddenException()
 
     try:
@@ -46,7 +46,7 @@ async def get_user_by_id(
     current_user: get_current_user_data,
 ):
 
-    if current_user["role"] != "admin":
+    if current_user.role != "admin":
         raise ForbiddenException()
 
     try:
@@ -77,7 +77,7 @@ async def create_categories(
     payload: CreateCategory, db: db_Session, current_user: get_current_user_data
 ):
 
-    if current_user["role"] != "admin":
+    if current_user.role != "admin":
         raise UnauthorizedException()
 
     new_category = Categories(name=payload.name, slug=payload.slug)
@@ -105,7 +105,7 @@ async def create_categories(
 async def post_products(
     payload: CreateProducts, db: db_Session, curent_user: get_current_user_data
 ):
-    if curent_user["role"] != "admin":
+    if curent_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to perform this action",
