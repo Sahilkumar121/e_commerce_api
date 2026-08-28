@@ -11,3 +11,6 @@ wheels/
 
 # All Database
 *.db
+
+# idea
+.idea
